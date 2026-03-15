@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>oskarma21 — Portal Hub</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+:root {
+  --obsidian: #0D0D12;
+  --obsidian-mid: #13131A;
+  --obsidian-light: #1A1A24;
+  --slate: #2A2A35;
+  --slate-light: #3A3A48;
+  --champagne: #C9A84C;
+  --champagne-light: #DFC078;
+  --champagne-dim: rgba(201,168,76,0.15);
+  --champagne-border: rgba(201,168,76,0.25);
+  --ivory: #FAF8F5;
+  --ivory-dim: rgba(250,248,245,0.06);
+  --ivory-mid: rgba(250,248,245,0.45);
+  --ivory-text: rgba(250,248,245,0.75);
+  --radius-lg: 2rem;
+  --radius-xl: 3rem;
+  --font-head: 'Inter', sans-serif;
+  --font-drama: 'Playfair Display', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--obsidian);
+  color: var(--ivory);
+  font-family: var(--font-head);
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* ── NOISE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--obsidian); }
+::-webkit-scrollbar-thumb { background: var(--champagne-border); border-radius: 2px; }
+
+/* ── NAVBAR ── */
+#navbar {
+  position: fixed;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: 999px;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  white-space: nowrap;
+  background: transparent;
+  border: 1px solid transparent;
+}
+#navbar.scrolled {
+  background: rgba(13,13,18,0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-color: var(--champagne-border);
+}
+.nav-logo {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ivory);
+  letter-spacing: 0.05em;
+  text-decoration: none;
+}
+.nav-logo span { color: var(--champagne); }
+.nav-links { display: flex; gap: 2rem; }
+.nav-links a {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ivory-text);
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  transition: color 0.2s, transform 0.2s;
+}
+.nav-links a:hover { color: var(--ivory); transform: translateY(-1px); }
+.nav-cta {
+  background: var(--champagne);
+  color: var(--obsidian) !important;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  text-decoration: none;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), background 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.nav-cta:hover { transform: scale(1.03) translateY(-1px) !important; background: var(--champagne-light); }
+
+/* ── HERO ── */
+#hero {
+  height: 100dvh;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=85&fit=crop');
+  background-size: cover;
+  background-position: center 40%;
+  filter: brightness(0.45);
+}
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    var(--obsidian) 0%,
+    rgba(13,13,18,0.85) 35%,
+    rgba(13,13,18,0.4) 70%,
+    transparent 100%
+  );
+}
+.hero-content {
+  position: relative;
+  z-index: 10;
+  padding: 0 5vw 7vh;
+  max-width: 900px;
+}
+.hero-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  color: var(--champagne);
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  opacity: 0;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 2rem;
+  height: 1px;
+  background: var(--champagne);
+}
+.hero-line1 {
+  font-family: var(--font-head);
+  font-weight: 900;
+  font-size: clamp(2.5rem, 6vw, 5.5rem);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--ivory);
+  opacity: 0;
+}
+.hero-line2 {
+  font-family: var(--font-drama);
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(3.5rem, 9vw, 8rem);
+  line-height: 0.9;
+  color: var(--champagne);
+  letter-spacing: -0.02em;
+  opacity: 0;
+  margin-top: -0.2rem;
+}
+.hero-sub {
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  color: var(--ivory-text);
+  max-width: 480px;
+  line-height: 1.6;
+  font-weight: 300;
+  opacity: 0;
+}
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 2.5rem;
+  padding: 0.9rem 2rem;
+  background: var(--champagne);
+  color: var(--obsidian);
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  text-decoration: none;
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.hero-cta::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.15);
+  transform: translateX(-100%);
+  transition: transform 0.4s;
+}
+.hero-cta:hover::after { transform: translateX(0); }
+.hero-cta:hover { transform: scale(1.03) translateY(-2px); box-shadow: 0 20px 40px rgba(201,168,76,0.3); }
+.hero-scroll {
+  position: absolute;
+  bottom: 2rem;
+  right: 5vw;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  color: var(--ivory-mid);
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+}
+.scroll-line {
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, var(--champagne), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+@keyframes scrollPulse { 0%,100%{opacity:0.3;transform:scaleY(0.6)} 50%{opacity:1;transform:scaleY(1)} }
+
+/* ── SECTION COMMON ── */
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--champagne);
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.section-label::before { content:''; display:inline-block; width:1.5rem; height:1px; background:var(--champagne); }
+
+/* ── PORTALS GRID ── */
+#portals {
+  padding: 8rem 5vw;
+}
+.portals-header { margin-bottom: 4rem; }
+.portals-header h2 {
+  font-family: var(--font-head);
+  font-weight: 900;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--ivory);
+}
+.portals-header h2 em {
+  font-family: var(--font-drama);
+  font-style: italic;
+  font-weight: 700;
+  color: var(--champagne);
+}
+.portals-header p {
+  margin-top: 1rem;
+  color: var(--ivory-text);
+  font-size: 1rem;
+  font-weight: 300;
+  max-width: 480px;
+}
+.portals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+.portal-card {
+  position: relative;
+  background: var(--obsidian-light);
+  border: 1px solid rgba(250,248,245,0.07);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  text-decoration: none;
+  color: var(--ivory);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              border-color 0.3s,
+              box-shadow 0.4s;
+  overflow: hidden;
+  opacity: 0;
+}
+.portal-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at top left, var(--card-glow, rgba(201,168,76,0.06)) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.portal-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  border-color: var(--card-accent, var(--champagne-border));
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 30px var(--card-shadow, rgba(201,168,76,0.08));
+}
+.portal-card:hover::before { opacity: 1; }
+.portal-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-icon-bg, rgba(201,168,76,0.12));
+  flex-shrink: 0;
+}
+.portal-icon-wrap svg { width: 26px; height: 26px; }
+.portal-info {}
+.portal-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ivory);
+  letter-spacing: -0.01em;
+  margin-bottom: 0.35rem;
+}
+.portal-desc {
+  font-size: 0.8rem;
+  color: var(--ivory-mid);
+  font-weight: 300;
+  line-height: 1.5;
+}
+.portal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+.portal-tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--card-tag-color, var(--champagne));
+  background: var(--card-tag-bg, rgba(201,168,76,0.1));
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.portal-arrow {
+  width: 32px; height: 32px;
+  border-radius: 999px;
+  background: var(--ivory-dim);
+  border: 1px solid rgba(250,248,245,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.3s;
+}
+.portal-card:hover .portal-arrow {
+  background: var(--card-accent, var(--champagne-border));
+  transform: rotate(45deg);
+}
+.arrow-svg { width: 14px; height: 14px; stroke: var(--ivory-text); fill: none; stroke-width: 2; }
+
+/* Power Platform section styling */
+.power-section-label {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  margin-bottom: -0.25rem;
+}
+.power-divider {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(250,248,245,0.08), transparent);
+}
+.power-label-text {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  color: var(--ivory-mid);
+  text-transform: uppercase;
+}
+
+/* ── MANIFESTO SECTION ── */
+#manifesto {
+  position: relative;
+  background: var(--obsidian-mid);
+  overflow: hidden;
+  padding: 8rem 5vw;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+.manifesto-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('https://images.unsplash.com/photo-1510511459019-5dda7724fd87?w=1400&q=70&fit=crop');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.04;
+}
+.manifesto-content { position: relative; z-index: 2; max-width: 900px; }
+.manifesto-line1 {
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  color: var(--ivory-mid);
+  font-weight: 300;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+.manifesto-line2 {
+  font-family: var(--font-drama);
+  font-style: italic;
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  line-height: 1.1;
+  color: var(--ivory);
+  font-weight: 700;
+}
+.manifesto-line2 em { color: var(--champagne); font-style: italic; }
+
+/* ── FEATURES CARDS ── */
+#features {
+  background: var(--obsidian-mid);
+  padding: 6rem 5vw;
+}
+.features-header { margin-bottom: 3rem; }
+.features-header h2 {
+  font-family: var(--font-head);
+  font-weight: 900;
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  letter-spacing: -0.03em;
+  color: var(--ivory);
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+.feat-card {
+  background: var(--obsidian-light);
+  border: 1px solid rgba(250,248,245,0.07);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  overflow: hidden;
+  opacity: 0;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+.feat-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ivory);
+  letter-spacing: -0.01em;
+  margin-bottom: 0.4rem;
+}
+.feat-desc {
+  font-size: 0.75rem;
+  color: var(--ivory-mid);
+  font-weight: 300;
+  line-height: 1.55;
+  margin-bottom: 1.5rem;
+}
+/* Shuffler Card */
+.shuffler-stack {
+  flex: 1;
+  position: relative;
+}
+.shuffler-item {
+  position: absolute;
+  width: 85%;
+  background: var(--slate);
+  border: 1px solid rgba(250,248,245,0.1);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.shuffler-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.shuffler-text { font-size: 0.78rem; color: var(--ivory-text); font-weight: 400; }
+/* Typewriter Card */
+.typewriter-feed {
+  flex: 1;
+  background: rgba(0,0,0,0.3);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ivory-text);
+  line-height: 1.8;
+  overflow: hidden;
+}
+.tw-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(250,248,245,0.08);
+}
+.pulse-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #22C55E;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+.tw-label { font-size: 0.65rem; letter-spacing: 0.1em; color: #22C55E; text-transform: uppercase; }
+#tw-output { color: var(--ivory); }
+.tw-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--champagne);
+  animation: blink 1s step-end infinite;
+  vertical-align: text-bottom;
+  margin-left: 1px;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+/* Scheduler Card */
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+.day-cell {
+  aspect-ratio: 1;
+  border-radius: 0.5rem;
+  background: var(--slate);
+  border: 1px solid rgba(250,248,245,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  transition: all 0.3s;
+}
+.day-cell.active {
+  background: var(--champagne);
+  border-color: var(--champagne);
+}
+.day-name { font-family: var(--font-mono); font-size: 0.55rem; color: var(--ivory-mid); letter-spacing: 0.05em; }
+.day-cell.active .day-name { color: var(--obsidian); }
+.day-num { font-size: 0.7rem; font-weight: 600; color: var(--ivory-text); }
+.day-cell.active .day-num { color: var(--obsidian); }
+.save-btn {
+  background: var(--slate);
+  border: 1px solid rgba(250,248,245,0.1);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ivory-text);
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.3s;
+  font-family: var(--font-head);
+  margin-top: auto;
+}
+.save-btn.saving {
+  background: var(--champagne-dim);
+  border-color: var(--champagne-border);
+  color: var(--champagne);
+}
+.cursor-svg {
+  position: absolute;
+  pointer-events: none;
+  transition: all 0.5s cubic-bezier(0.25,0.46,0.45,0.94);
+  z-index: 10;
+  opacity: 0;
+}
+
+/* ── CONTACT SECTION ── */
+#contact {
+  background: var(--obsidian);
+  padding: 8rem 5vw;
+}
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: start;
+}
+.contact-left h2 {
+  font-family: var(--font-head);
+  font-weight: 900;
+  font-size: clamp(1.75rem, 3.5vw, 3rem);
+  letter-spacing: -0.03em;
+  color: var(--ivory);
+  margin-bottom: 1rem;
+  line-height: 1.1;
+}
+.contact-left h2 em {
+  font-family: var(--font-drama);
+  font-style: italic;
+  color: var(--champagne);
+}
+.contact-left p {
+  color: var(--ivory-text);
+  font-size: 0.95rem;
+  font-weight: 300;
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+}
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.contact-info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--ivory-mid);
+}
+.info-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--ivory-dim);
+  border: 1px solid rgba(250,248,245,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.info-icon svg { width: 16px; height: 16px; stroke: var(--champagne); fill: none; stroke-width: 1.5; }
+
+/* Form */
+.contact-form {
+  background: var(--obsidian-light);
+  border: 1px solid rgba(250,248,245,0.08);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem;
+  opacity: 0;
+}
+.form-group { margin-bottom: 1.25rem; }
+.form-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: var(--champagne);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.form-control {
+  width: 100%;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(250,248,245,0.1);
+  border-radius: 0.875rem;
+  padding: 0.85rem 1rem;
+  font-family: var(--font-head);
+  font-size: 0.875rem;
+  color: var(--ivory);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  resize: none;
+}
+.form-control::placeholder { color: rgba(250,248,245,0.3); }
+.form-control:focus {
+  border-color: var(--champagne-border);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.08);
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-select {
+  width: 100%;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(250,248,245,0.1);
+  border-radius: 0.875rem;
+  padding: 0.85rem 1rem;
+  font-family: var(--font-head);
+  font-size: 0.875rem;
+  color: var(--ivory);
+  outline: none;
+  transition: border-color 0.2s;
+  appearance: none;
+  cursor: pointer;
+}
+.form-select:focus { border-color: var(--champagne-border); }
+.form-select option { background: var(--obsidian-light); }
+.rating-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.rating-btn {
+  width: 40px; height: 40px;
+  border-radius: 0.625rem;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(250,248,245,0.1);
+  color: var(--ivory-mid);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--font-head);
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.rating-btn:hover { border-color: var(--champagne-border); color: var(--champagne); transform: scale(1.05); }
+.rating-btn.selected { background: var(--champagne); border-color: var(--champagne); color: var(--obsidian); font-weight: 700; }
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  background: var(--champagne);
+  color: var(--obsidian);
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  border: none;
+  border-radius: 1rem;
+  cursor: pointer;
+  font-family: var(--font-head);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s;
+  position: relative;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+.submit-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.2);
+  transform: translateX(-101%);
+  transition: transform 0.4s;
+}
+.submit-btn:hover::after { transform: translateX(0); }
+.submit-btn:hover { transform: scale(1.02); box-shadow: 0 10px 30px rgba(201,168,76,0.35); }
+.submit-btn:active { transform: scale(0.98); }
+
+.success-msg {
+  display: none;
+  text-align: center;
+  padding: 2rem;
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 1.5rem;
+  margin-top: 1rem;
+}
+.success-msg h3 { color: #22C55E; font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+.success-msg p { color: var(--ivory-mid); font-size: 0.85rem; }
+
+/* ── FOOTER ── */
+#footer {
+  background: var(--obsidian-mid);
+  border-radius: 4rem 4rem 0 0;
+  padding: 4rem 5vw 2.5rem;
+  border-top: 1px solid rgba(250,248,245,0.05);
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 3rem;
+}
+.footer-brand-name {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--ivory);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+.footer-brand-name span { color: var(--champagne); }
+.footer-tagline {
+  font-size: 0.8rem;
+  color: var(--ivory-mid);
+  font-weight: 300;
+  line-height: 1.6;
+  max-width: 280px;
+  margin-bottom: 1.5rem;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 999px;
+  padding: 0.35rem 0.875rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: #22C55E;
+  text-transform: uppercase;
+}
+.footer-col-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ivory);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+.footer-links a {
+  font-size: 0.8rem;
+  color: var(--ivory-mid);
+  text-decoration: none;
+  font-weight: 300;
+  transition: color 0.2s, transform 0.2s;
+  display: inline-block;
+}
+.footer-links a:hover { color: var(--ivory); transform: translateX(3px); }
+.footer-bottom {
+  border-top: 1px solid rgba(250,248,245,0.06);
+  padding-top: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.footer-legal {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  color: rgba(250,248,245,0.3);
+}
+.footer-tenant {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--champagne);
+  letter-spacing: 0.05em;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .features-grid { grid-template-columns: 1fr; }
+  .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .nav-links { display: none; }
+  .form-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .portals-grid { grid-template-columns: 1fr; }
+  #navbar { padding: 0.6rem 1.25rem; gap: 1.25rem; }
+}
+
+/* ── ANIMATIONS INITIAL STATE ── */
+.fade-up { opacity: 0; transform: translateY(30px); }
+</style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">oskarma<span>21</span></a>
+  <div class="nav-links">
+    <a href="#portals">Portales</a>
+    <a href="#features">Funciones</a>
+    <a href="#contact">Contacto</a>
+  </div>
+  <a href="#contact" class="nav-cta">Dejar mensaje</a>
+</nav>
+
+<!-- ── HERO ── -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Tenant — oskarma21.onmicrosoft.com</div>
+    <div class="hero-line1">Administración meets</div>
+    <div class="hero-line2">Precisión.</div>
+    <p class="hero-sub">Acceso centralizado a todos los portales Microsoft del tenant oskarma21. Azure, Entra ID, Microsoft 365 y todo el ecosistema Power Platform — en un solo lugar.</p>
+    <a href="#portals" class="hero-cta">
+      Explorar portales
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ── PORTALS GRID ── -->
+<section id="portals">
+  <div class="portals-header fade-up">
+    <div class="section-label">Acceso directo</div>
+    <h2>Todos los portales,<br/><em>un solo destino.</em></h2>
+    <p>Haz clic en cualquier portal para acceder directamente al tenant oskarma21.onmicrosoft.com.</p>
+  </div>
+  <div class="portals-grid">
+
+    <!-- Azure Portal -->
+    <a href="https://portal.azure.com/#@oskarma21.onmicrosoft.com" target="_blank" class="portal-card"
+       style="--card-glow:rgba(0,120,212,0.08);--card-accent:rgba(0,120,212,0.35);--card-shadow:rgba(0,120,212,0.1);--card-icon-bg:rgba(0,120,212,0.12);--card-tag-color:#60a8f8;--card-tag-bg:rgba(0,120,212,0.1)">
+      <div class="portal-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13.05 4.24L6.56 17.01 2 17.01 8.43 5.54 13.05 4.24Z" fill="#0078D4"/>
+          <path d="M14.43 5.8L9.34 18.88l10.03-1.33-5.52-9.15L14.43 5.8Z" fill="#0078D4" opacity="0.7"/>
+          <path d="M9.34 18.88L2 17.01l12.43-.46L9.34 18.88Z" fill="#0050A0"/>
+        </svg>
+      </div>
+      <div class="portal-info">
+        <div class="portal-name">Azure Portal</div>
+        <div class="portal-desc">Gestión de recursos, suscripciones, máquinas virtuales y servicios de infraestructura en la nube.</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag">Infrastructure</span>
+        <span class="portal-arrow"><svg class="arrow-svg" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7v10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Entra ID -->
+    <a href="https://entra.microsoft.com/#@oskarma21.onmicrosoft.com" target="_blank" class="portal-card"
+       style="--card-glow:rgba(98,100,167,0.08);--card-accent:rgba(98,100,167,0.35);--card-shadow:rgba(98,100,167,0.1);--card-icon-bg:rgba(98,100,167,0.12);--card-tag-color:#a5a7e0;--card-tag-bg:rgba(98,100,167,0.1)">
+      <div class="portal-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="8" r="3.5" fill="#6264A7"/>
+          <path d="M4 19c0-4.4 3.58-8 8-8s8 3.6 8 8" stroke="#6264A7" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <circle cx="19" cy="7" r="2" fill="#8b8de0"/>
+          <path d="M21 13a4 4 0 00-3-1" stroke="#8b8de0" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="portal-info">
+        <div class="portal-name">Microsoft Entra ID</div>
+        <div class="portal-desc">Identidades, grupos, acceso condicional, registro de aplicaciones y directivas de seguridad.</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag">Identity</span>
+        <span class="portal-arrow"><svg class="arrow-svg" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7v10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+    </a>
+
+    <!-- M365 Admin -->
+    <a href="https://admin.microsoft.com/" target="_blank" class="portal-card"
+       style="--card-glow:rgba(209,52,56,0.08);--card-accent:rgba(209,52,56,0.35);--card-shadow:rgba(209,52,56,0.1);--card-icon-bg:rgba(209,52,56,0.12);--card-tag-color:#f87171;--card-tag-bg:rgba(209,52,56,0.1)">
+      <div class="portal-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="9" height="9" rx="1.5" fill="#D13438"/>
+          <rect x="13" y="2" width="9" height="9" rx="1.5" fill="#D13438" opacity="0.7"/>
+          <rect x="2" y="13" width="9" height="9" rx="1.5" fill="#D13438" opacity="0.7"/>
+          <rect x="13" y="13" width="9" height="9" rx="1.5" fill="#D13438" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="portal-info">
+        <div class="portal-name">Microsoft 365 Admin</div>
+        <div class="portal-desc">Centro de administración principal: licencias, usuarios, facturación, soporte y cumplimiento.</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag">Admin Center</span>
+        <span class="portal-arrow"><svg class="arrow-svg" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7v10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Teams Admin -->
+    <a href="https://admin.teams.microsoft.com/" target="_blank" class="portal-card"
+       style="--card-glow:rgba(98,100,167,0.08);--card-accent:rgba(98,100,167,0.35);--card-shadow:rgba(98,100,167,0.1);--card-icon-bg:rgba(98,100,167,0.12);--card-tag-color:#a5a7e0;--card-tag-bg:rgba(98,100,167,0.1)">
+      <div class="portal-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17 8a3 3 0 100-6 3 3 0 000 6z" fill="#6264A7"/>
+          <path d="M10 10a4 4 0 100-8 4 4 0 000 8z" fill="#464775"/>
+          <path d="M14.5 14a6.5 6.5 0 00-9 0A6.48 6.48 0 004 18h12a6.48 6.48 0 00-1.5-4z" fill="#464775"/>
+          <path d="M18.5 10a5.5 5.5 0 012 4.3V17h-5a8.5 8.5 0 00.5-3 8.5 8.5 0 00-.5-3h3z" fill="#6264A7"/>
+        </svg>
+      </div>
+      <div class="portal-info">
+        <div class="portal-name">Teams Admin Center</div>
+        <div class="portal-desc">Políticas de Teams, reuniones, llamadas, dispositivos y configuración de usuarios.</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag">Collaboration</span>
+        <span class="portal-arrow"><svg class="arrow-svg" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7v10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Exchange Admin -->
+    <a href="https://admin.exchange.microsoft.com/" target="_blank" class="portal-card"
+       style="--card-glow:rgba(0,120,212,0.08);--card-accent:rgba(0,120,212,0.35);--card-shadow:rgba(0,120,212,0.1);--card-icon-bg:rgba(0,120,212,0.12);--card-tag-color:#60a8f8;--card-tag-bg:rgba(0,120,212,0.1)">
+      <div class="portal-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="5" width="20" height="14" rx="2" fill="#0078D4" opacity="0.15" stroke="#0078D4" stroke-width="1.5"/>
+          <path d="M2 8l10 6 10-6" stroke="#0078D4" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="portal-info">
+        <div class="portal-name">Exchange Admin Center</div>
+        <div class="portal-desc">Buzones de correo, flujo de correo, reglas de transporte, conectores y protección.</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag">Email</span>
+        <span class="portal-arrow"><svg class="arrow-svg" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7v10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+    </a>
+
+    <!-- SharePoint Admin -->
+    <a href="https://oskarma21-admin.sharepoint.com/" target="_blank" class="portal-card"
+       style="--card-glow:rgba(3,131,135,0.08);--card-accent:rgba(3,131,135,0.35);--card-shadow:rgba(3,131,135,0.1);--card-icon-bg:rgba(3,131,135,0.12);--card-tag-color:#4dd9dd;--card-tag-bg:rgba(3,131,135,0.1)">
+      <div class="portal-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="9" cy="9" r="5.5" fill="#038387"/>
+          <circle cx="17" cy="14" r="4.5" fill="#038387" opacity="0.7"/>
+          <circle cx="9" cy="18" r="3.5" fill="#038387" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="portal-info">
+        <div class="portal-name">SharePoint Admin</div>
+        <div class="portal-desc">Sitios de SharePoint, colecciones de sitios, almacenamiento, perfiles de usuario y configuración.</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag">Content</span>
+        <span class="portal-arrow"><svg class="arrow-svg" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7v10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Power Platform divider -->
+    <div class="power-section-label">
+      <div class="power-divider"></div>
+      <span class="power-label-text">Power Platform</span>
+      <div class="power-divider"></div>
+    </div>
+
+    <!-- Power Apps -->
+    <a href="https://make.powerapps.com/" target="_blank" class="portal-card"
+       style="--card-glow:rgba(116,39,116,0.08);--card-accent:rgba(116,39,116,0.4);--card-shadow:rgba(116,39,116,0.1);--card-icon-bg:rgba(116,39,116,0.12);--card-tag-color:#d884d8;--card-tag-bg:rgba(116,39,116,0.1)">
+      <div class="portal-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 3l14 9-14 9V3z" fill="#742774"/>
+          <path d="M12 7l7 5-7 5V7z" fill="#742774" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="portal-info">
+        <div class="portal-name">Power Apps</div>
+        <div class="portal-desc">Creación de aplicaciones de negocio de baja o ninguna codificación, conectadas a tus datos.</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag">Low-code</span>
+        <span class="portal-arrow"><svg class="arrow-svg" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7v10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Power Automate -->
+    <a href="https://make.powerautomate.com/" target="_blank" class="portal-card"
+       style="--card-glow:rgba(0,102,255,0.08);--card-accent:rgba(0,102,255,0.3);--card-shadow:rgba(0,102,255,0.1);--card-icon-bg:rgba(0,102,255,0.12);--card-tag-color:#6699ff;--card-tag-bg:rgba(0,102,255,0.1)">
+      <div class="portal-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="#0066FF" stroke="#0066FF" stroke-width="0.5" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="portal-info">
+        <div class="portal-name">Power Automate</div>
+        <div class="portal-desc">Automatización de flujos de trabajo entre aplicaciones, servicios y datos en la nube.</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag">Automation</span>
+        <span class="portal-arrow"><svg class="arrow-svg" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7v10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Power Pages -->
+    <a href="https://make.powerpages.microsoft.com/" target="_blank" class="portal-card"
+       style="--card-glow:rgba(0,164,120,0.08);--card-accent:rgba(0,164,120,0.35);--card-shadow:rgba(0,164,120,0.1);--card-icon-bg:rgba(0,164,120,0.12);--card-tag-color:#33c99e;--card-tag-bg:rgba(0,164,120,0.1)">
+      <div class="portal-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="#00A478" stroke-width="1.5"/>
+          <path d="M7 8h10M7 12h6M7 16h8" stroke="#00A478" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="portal-info">
+        <div class="portal-name">Power Pages</div>
+        <div class="portal-desc">Creación de sitios web empresariales externos seguros, conectados a Dataverse.</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag">Web Sites</span>
+        <span class="portal-arrow"><svg class="arrow-svg" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7v10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+    </a>
+
+    <!-- Power BI -->
+    <a href="https://app.powerbi.com/" target="_blank" class="portal-card"
+       style="--card-glow:rgba(242,200,17,0.08);--card-accent:rgba(242,200,17,0.3);--card-shadow:rgba(242,200,17,0.1);--card-icon-bg:rgba(242,200,17,0.12);--card-tag-color:#f7d84f;--card-tag-bg:rgba(242,200,17,0.1)">
+      <div class="portal-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="10" width="4" height="10" rx="1" fill="#F2C811"/>
+          <rect x="8" y="6" width="4" height="14" rx="1" fill="#F2C811" opacity="0.8"/>
+          <rect x="14" y="2" width="4" height="18" rx="1" fill="#F2C811" opacity="0.6"/>
+          <rect x="20" y="14" width="2" height="6" rx="0.5" fill="#F2C811" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="portal-info">
+        <div class="portal-name">Power BI Service</div>
+        <div class="portal-desc">Informes interactivos, dashboards, conjuntos de datos y análisis de negocio en la nube.</div>
+      </div>
+      <div class="portal-footer">
+        <span class="portal-tag">Analytics</span>
+        <span class="portal-arrow"><svg class="arrow-svg" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7v10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- ── MANIFESTO ── -->
+<section id="manifesto">
+  <div class="manifesto-bg"></div>
+  <div class="manifesto-content">
+    <div class="section-label fade-up">Filosofía</div>
+    <p class="manifesto-line1 fade-up">La mayoría de los hubs de administración obligan a recordar URLs, navegar manualmente y perder tiempo buscando el portal correcto.</p>
+    <h2 class="manifesto-line2 fade-up">Nosotros creemos en el <em>acceso sin fricción.</em></h2>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section id="features">
+  <div class="features-header fade-up">
+    <div class="section-label">Características</div>
+    <h2>Diseñado para administradores</h2>
+  </div>
+  <div class="features-grid">
+
+    <!-- Card 1: Shuffler — Quick Access -->
+    <div class="feat-card" id="feat1">
+      <div class="feat-title">Acceso rápido centralizado</div>
+      <div class="feat-desc">Los 10 portales Microsoft a un clic. Sin recordar URLs ni navegar manualmente.</div>
+      <div class="shuffler-stack" id="shuffler-stack">
+        <div class="shuffler-item" id="si-0" style="top:0;z-index:3">
+          <div class="shuffler-dot" style="background:#0078D4"></div>
+          <span class="shuffler-text">Azure Portal — oskarma21</span>
+        </div>
+        <div class="shuffler-item" id="si-1" style="top:54px;z-index:2;opacity:0.75;transform:scale(0.97)">
+          <div class="shuffler-dot" style="background:#6264A7"></div>
+          <span class="shuffler-text">Entra ID — Identidades</span>
+        </div>
+        <div class="shuffler-item" id="si-2" style="top:100px;z-index:1;opacity:0.5;transform:scale(0.94)">
+          <div class="shuffler-dot" style="background:#F2C811"></div>
+          <span class="shuffler-text">Power BI — Dashboards</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Typewriter — Live Admin Feed -->
+    <div class="feat-card" id="feat2">
+      <div class="feat-title">Monitorización en tiempo real</div>
+      <div class="feat-desc">Panel de estado del tenant con información de actividad y salud del sistema.</div>
+      <div class="typewriter-feed">
+        <div class="tw-header">
+          <div class="pulse-dot"></div>
+          <span class="tw-label">Feed en vivo</span>
+        </div>
+        <div id="tw-output"></div><span class="tw-cursor"></span>
+      </div>
+    </div>
+
+    <!-- Card 3: Scheduler — Weekly Admin Tasks -->
+    <div class="feat-card" id="feat3" style="position:relative">
+      <div class="feat-title">Gestión de opiniones</div>
+      <div class="feat-desc">Programa revisiones periódicas y deja mensajes de contacto directamente desde el hub.</div>
+      <div class="week-grid" id="week-grid">
+        <div class="day-cell" data-day="0"><span class="day-name">D</span><span class="day-num">9</span></div>
+        <div class="day-cell" data-day="1"><span class="day-name">L</span><span class="day-num">10</span></div>
+        <div class="day-cell" data-day="2"><span class="day-name">M</span><span class="day-num">11</span></div>
+        <div class="day-cell" data-day="3"><span class="day-name">X</span><span class="day-num">12</span></div>
+        <div class="day-cell" data-day="4"><span class="day-name">J</span><span class="day-num">13</span></div>
+        <div class="day-cell" data-day="5"><span class="day-name">V</span><span class="day-num">14</span></div>
+        <div class="day-cell" data-day="6"><span class="day-name">S</span><span class="day-num">15</span></div>
+      </div>
+      <button class="save-btn" id="save-btn">Guardar revisión</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── CONTACT SECTION ── -->
+<section id="contact">
+  <div class="contact-grid">
+    <div class="contact-left fade-up">
+      <div class="section-label">Contacto &amp; Opinión</div>
+      <h2>Deja tu<br/><em>mensaje.</em></h2>
+      <p>¿Tienes alguna consulta sobre el tenant, quieres reportar un problema o dejarnos tu opinión sobre el portal? Escríbenos y te responderemos a la mayor brevedad.</p>
+      <div class="contact-info">
+        <div class="contact-info-item">
+          <div class="info-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          Tenant: oskarma21.onmicrosoft.com
+        </div>
+        <div class="contact-info-item">
+          <div class="info-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          Microsoft 365 — Entorno empresarial
+        </div>
+        <div class="contact-info-item">
+          <div class="info-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" stroke-linecap="round"/></svg>
+          </div>
+          Respuesta en menos de 24 horas
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-form" id="contact-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre</label>
+          <input type="text" class="form-control" placeholder="Tu nombre" id="f-name"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" placeholder="tu@email.com" id="f-email"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipo de mensaje</label>
+        <select class="form-control form-select" id="f-type">
+          <option value="">Selecciona un tipo...</option>
+          <option value="consulta">Consulta técnica</option>
+          <option value="opinion">Opinión sobre el portal</option>
+          <option value="problema">Reportar un problema</option>
+          <option value="acceso">Solicitud de acceso</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Portal relacionado (opcional)</label>
+        <select class="form-control form-select" id="f-portal">
+          <option value="">Todos / General</option>
+          <option value="azure">Azure Portal</option>
+          <option value="entra">Microsoft Entra ID</option>
+          <option value="m365">Microsoft 365 Admin</option>
+          <option value="teams">Teams Admin Center</option>
+          <option value="exchange">Exchange Admin</option>
+          <option value="sharepoint">SharePoint Admin</option>
+          <option value="powerapps">Power Apps</option>
+          <option value="automate">Power Automate</option>
+          <option value="pages">Power Pages</option>
+          <option value="pbi">Power BI Service</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Valoración del portal (1–10)</label>
+        <div class="rating-group" id="rating-group">
+          <!-- filled by JS -->
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mensaje</label>
+        <textarea class="form-control" rows="4" placeholder="Escribe tu mensaje o comentario aquí..." id="f-msg"></textarea>
+      </div>
+      <button class="submit-btn" id="submit-btn">Enviar mensaje</button>
+      <div class="success-msg" id="success-msg">
+        <h3>✓ Mensaje enviado</h3>
+        <p>Gracias por tu opinión. Te responderemos en breve a tu dirección de correo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer id="footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand-name">oskarma<span>21</span></div>
+      <p class="footer-tagline">Hub de administración centralizada para el tenant oskarma21.onmicrosoft.com — acceso a todos los portales de Microsoft 365 y Azure.</p>
+      <div class="status-pill">
+        <div class="pulse-dot"></div>
+        Sistema operativo
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Portales</div>
+      <ul class="footer-links">
+        <li><a href="https://portal.azure.com/#@oskarma21.onmicrosoft.com" target="_blank">Azure Portal</a></li>
+        <li><a href="https://entra.microsoft.com/#@oskarma21.onmicrosoft.com" target="_blank">Entra ID</a></li>
+        <li><a href="https://admin.microsoft.com/" target="_blank">M365 Admin</a></li>
+        <li><a href="https://admin.teams.microsoft.com/" target="_blank">Teams Admin</a></li>
+        <li><a href="https://admin.exchange.microsoft.com/" target="_blank">Exchange Admin</a></li>
+        <li><a href="https://oskarma21-admin.sharepoint.com/" target="_blank">SharePoint Admin</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Power Platform</div>
+      <ul class="footer-links">
+        <li><a href="https://make.powerapps.com/" target="_blank">Power Apps</a></li>
+        <li><a href="https://make.powerautomate.com/" target="_blank">Power Automate</a></li>
+        <li><a href="https://make.powerpages.microsoft.com/" target="_blank">Power Pages</a></li>
+        <li><a href="https://app.powerbi.com/" target="_blank">Power BI Service</a></li>
+        <li><a href="#contact">Contacto</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-legal">© 2025 oskarma21 Portal Hub — Todos los derechos reservados</span>
+    <span class="footer-tenant">tenant: oskarma21.onmicrosoft.com</span>
+  </div>
+</footer>
+
+<script>
+// ── REGISTER SCROLLTRIGGER ──
+gsap.registerPlugin(ScrollTrigger);
+
+// ── NAVBAR SCROLL ──
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 80);
+}, { passive: true });
+
+// ── HERO ANIMATIONS ──
+const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+heroTl
+  .to('.hero-eyebrow', { opacity: 1, y: 0, duration: 0.8, delay: 0.3 })
+  .to('.hero-line1',   { opacity: 1, y: 0, duration: 0.9 }, '-=0.4')
+  .to('.hero-line2',   { opacity: 1, y: 0, duration: 0.9 }, '-=0.6')
+  .to('.hero-sub',     { opacity: 1, y: 0, duration: 0.8 }, '-=0.5')
+  .to('.hero-cta',     { opacity: 1, y: 0, duration: 0.7 }, '-=0.4')
+  .to('.hero-scroll',  { opacity: 1, duration: 0.6 }, '-=0.2');
+
+// init hero text positions
+gsap.set(['.hero-eyebrow','.hero-line1','.hero-line2','.hero-sub','.hero-cta'], { y: 40 });
+
+// ── PORTALS GRID STAGGER ──
+ScrollTrigger.create({
+  trigger: '#portals',
+  start: 'top 80%',
+  onEnter: () => {
+    gsap.to('.portal-card', {
+      opacity: 1, y: 0, duration: 0.7, stagger: 0.08, ease: 'power3.out',
+      from: { y: 30 }
+    });
+  }
+});
+gsap.set('.portal-card', { y: 30 });
+
+// ── FADE-UP SECTIONS ──
+document.querySelectorAll('.fade-up').forEach(el => {
+  gsap.from(el, {
+    scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+    y: 35, opacity: 0, duration: 0.8, ease: 'power3.out'
+  });
+});
+
+// ── FEATURES STAGGER ──
+ScrollTrigger.create({
+  trigger: '#features',
+  start: 'top 75%',
+  onEnter: () => {
+    gsap.to('.feat-card', {
+      opacity: 1, y: 0, duration: 0.7, stagger: 0.12, ease: 'power3.out'
+    });
+  }
+});
+gsap.set('.feat-card', { y: 30 });
+
+// ── CONTACT FORM ──
+ScrollTrigger.create({
+  trigger: '#contact-form',
+  start: 'top 80%',
+  onEnter: () => {
+    gsap.to('#contact-form', { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' });
+  }
+});
+gsap.set('#contact-form', { y: 30 });
+
+// ── SHUFFLER CARD ──
+const shuffleItems = [
+  { color: '#0078D4', text: 'Azure Portal — oskarma21' },
+  { color: '#6264A7', text: 'Entra ID — Identidades' },
+  { color: '#F2C811', text: 'Power BI — Dashboards' },
+  { color: '#D13438', text: 'M365 Admin — Licencias' },
+  { color: '#038387', text: 'SharePoint — Contenido' },
+  { color: '#742774', text: 'Power Apps — Low-code' },
+];
+let shuffleIdx = 0;
+const stack = document.getElementById('shuffler-stack');
+
+function createShuffleEl(item, pos) {
+  const el = document.createElement('div');
+  el.className = 'shuffler-item';
+  el.innerHTML = `<div class="shuffler-dot" style="background:${item.color}"></div><span class="shuffler-text">${item.text}</span>`;
+  el.style.cssText = `top:${pos * 54}px;z-index:${3 - pos};opacity:${pos === 0 ? 1 : pos === 1 ? 0.75 : 0.5};transform:scale(${1 - pos * 0.03})`;
+  return el;
+}
+
+let shuffleItems3 = shuffleItems.slice(0, 3);
+
+function runShuffler() {
+  shuffleIdx = (shuffleIdx + 1) % shuffleItems.length;
+  shuffleItems3 = [
+    shuffleItems[shuffleIdx],
+    shuffleItems[(shuffleIdx + 1) % shuffleItems.length],
+    shuffleItems[(shuffleIdx + 2) % shuffleItems.length]
+  ];
+  stack.innerHTML = '';
+  shuffleItems3.forEach((item, i) => {
+    const el = createShuffleEl(item, i);
+    stack.appendChild(el);
+    gsap.from(el, {
+      y: -20, opacity: 0, duration: 0.6,
+      ease: 'cubic-bezier(0.34,1.56,0.64,1)',
+      delay: i * 0.06
+    });
+  });
+}
+
+// init shuffler
+stack.innerHTML = '';
+shuffleItems.slice(0, 3).forEach((item, i) => stack.appendChild(createShuffleEl(item, i)));
+setInterval(runShuffler, 2800);
+
+// ── TYPEWRITER CARD ──
+const twMessages = [
+  '> Tenant oskarma21 conectado...',
+  '> 12 usuarios activos en Entra ID',
+  '> Exchange: 0 errores de flujo',
+  '> SharePoint: 3 sitios activos',
+  '> Power BI: 7 informes publicados',
+  '> Teams: 5 canales configurados',
+  '> Licencias: 15/20 asignadas',
+  '> Azure: suscripción activa',
+  '> Estado general: OPERATIVO',
+];
+let twMsgIdx = 0, twCharIdx = 0;
+const twOutput = document.getElementById('tw-output');
+const twLines = [];
+
+function typeNextChar() {
+  const msg = twMessages[twMsgIdx];
+  if (twCharIdx <= msg.length) {
+    const line = twLines[twLines.length - 1];
+    if (line) line.textContent = msg.substring(0, twCharIdx);
+    twCharIdx++;
+    setTimeout(typeNextChar, 40 + Math.random() * 30);
+  } else {
+    twMsgIdx = (twMsgIdx + 1) % twMessages.length;
+    twCharIdx = 0;
+    if (twLines.length >= 5) { twLines.shift(); twOutput.removeChild(twOutput.firstChild); }
+    const newLine = document.createElement('div');
+    twOutput.appendChild(newLine);
+    twLines.push(newLine);
+    setTimeout(typeNextChar, 600);
+  }
+}
+const firstLine = document.createElement('div');
+twOutput.appendChild(firstLine);
+twLines.push(firstLine);
+setTimeout(typeNextChar, 1200);
+
+// ── SCHEDULER CARD ──
+const days = document.querySelectorAll('.day-cell');
+const saveBtn = document.getElementById('save-btn');
+let activeDay = -1;
+
+function runSchedulerAnim() {
+  let step = 0;
+  const seq = [1, 3, 5]; // Monday, Wednesday, Friday
+  function next() {
+    if (step < seq.length) {
+      const dayIdx = seq[step];
+      if (activeDay >= 0) days[activeDay].classList.remove('active');
+      days[dayIdx].classList.add('active');
+      activeDay = dayIdx;
+      gsap.from(days[dayIdx], { scale: 0.85, duration: 0.4, ease: 'back.out(2)' });
+      step++;
+      setTimeout(next, 900);
+    } else {
+      saveBtn.classList.add('saving');
+      saveBtn.textContent = '✓ Revisión guardada';
+      setTimeout(() => {
+        saveBtn.classList.remove('saving');
+        saveBtn.textContent = 'Guardar revisión';
+        days.forEach(d => d.classList.remove('active'));
+        activeDay = -1;
+        step = 0;
+        setTimeout(next, 1500);
+      }, 2000);
+    }
+  }
+  next();
+}
+setTimeout(runSchedulerAnim, 2000);
+
+// ── RATING BUTTONS ──
+const ratingGroup = document.getElementById('rating-group');
+for (let i = 1; i <= 10; i++) {
+  const btn = document.createElement('button');
+  btn.className = 'rating-btn';
+  btn.textContent = i;
+  btn.dataset.val = i;
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  });
+  ratingGroup.appendChild(btn);
+}
+
+// ── SUBMIT FORM ──
+document.getElementById('submit-btn').addEventListener('click', () => {
+  const name = document.getElementById('f-name').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const msg = document.getElementById('f-msg').value.trim();
+  if (!name || !email || !msg) {
+    gsap.from('#contact-form', { x: -8, duration: 0.1, yoyo: true, repeat: 5, ease: 'none' });
+    return;
+  }
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Enviando...';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.style.display = 'none';
+    document.getElementById('success-msg').style.display = 'block';
+    gsap.from('#success-msg', { y: 10, opacity: 0, duration: 0.5, ease: 'power3.out' });
+  }, 1200);
+});
+
+// ── PARALLAX MANIFESTO BG ──
+gsap.to('.manifesto-bg', {
+  scrollTrigger: { trigger: '#manifesto', start: 'top bottom', end: 'bottom top', scrub: true },
+  y: '15%',
+  ease: 'none'
+});
+</script>
+</body>
+</html>
